@@ -3,6 +3,14 @@ from math import *
 from utm import utmconv
 import matplotlib.pyplot as plt
 from pathlib import Path
+import csv
+
+def getGPSSample(samples, t):
+  i = 0
+  while(samples[i][0] < t and i < len(samples)-1):
+    i += 1
+  i = max(i-1, 0)
+  return samples[i]
 
 
 def dm2d_lat(dm):
@@ -16,8 +24,13 @@ def dm2d_lon(dm):
   return d + m/60.0
 
 
+
+
+
 def main():
-  for file in Path(".").glob("*.csv"):
+  errors = []
+
+  for file in Path(".").glob("1*.csv"):
     print(file)
     coordinates = []
     dists = []
@@ -100,13 +113,11 @@ def main():
 
 
     # Calculate errors
-    error_acc = 0
-    error_gps = 0
-    error_filter = 0
+    error_acc = sum([abs(enc[1] - acc[1]) for (enc, acc) in zip(encoder, acc)])/len(encoder)
+    error_gps = sum([abs(t[1] - getGPSSample(dists, t[0])[1]) for t in encoder])/len(encoder)
+    error_filter = sum([abs(enc[1] - x[1][0]) for (enc, x) in zip(encoder, X)])/len(encoder)
 
-    
-
-
+    errors.append((error_acc, error_gps, error_filter))
 
 
     x_unzipped = list(zip(*X))
@@ -121,6 +132,9 @@ def main():
     plt.waitforbuttonpress()
     plt.cla()
     
+  with open('errors.csv', 'w', newline ='') as file:
+    write = csv.writer(file)
+    write.writerows(errors)
 
 if __name__ == "__main__":
   main()
