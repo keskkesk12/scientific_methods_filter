@@ -90,6 +90,7 @@ def main():
         t = int(p[1])
         latitude = dm2d_lat(p[2])
         longitude = dm2d_lon(p[3])
+        print(latitude, longitude)
         (hemisphere, zone, letter, e, n) = uc.geodetic_to_utm (latitude, longitude)
         coordinates.append([e, n])
         d = sqrt(e**2+n**2)
